@@ -106,17 +106,6 @@ function openModal(pokemonId) {
     let msg = details(id, pokemonId);
     menuInfo.innerHTML = msg;
 
-    //Inicializa o botão de favorito, caso estiver favoritado
-    let botao = document.querySelector('.heart');
-
-    if (pokemon.liked == false || pokemon.liked == undefined) {
-        pokedexList[page][index].liked = false;
-        botao.classList.remove("liked");
-    } else {
-        pokedexList[page][index].liked = true;
-        botao.classList.add("liked");
-    }
-
     //Chama função de formatar dados
     formatData();
 
@@ -156,15 +145,11 @@ function buildModal(pokemon) {
     return `
     <div class="header">
         <div class="buttons">
-        <div class="back">
-            <button onclick="closeModal(${pokemon.number})">
-                <img src="./assets/img/arrow.png" alt="Voltar">
-            </button>
-        </div>
-
-        <button class="heart ${likedParam}" onclick="likedToggle(this, ${pokemon.number})">
-            <img src="./assets/img/heart.png" alt="Coração">
-        </button>
+            <div class="back">
+                <button onclick="closeModal(${pokemon.number})">
+                    <img src="./assets/img/arrow.png" alt="Voltar">
+                </button>
+            </div>
         </div>
         <div class="infos">
             <div class="detail">
@@ -318,32 +303,6 @@ function barColors(pokemonId) {
         //Ajustar largura das barras
         newWidthBar = (stats[i] * maxWidthBar) / maxAttribute;
         colorBar[i].style.width = newWidthBar + 'px';
-    }
-}
-
-//Botão de favoritar pokemon
-function likedToggle(botao, pokemonId) {
-    let page = parseInt((pokemonId - 1) / limit);
-    let index = (pokemonId - 1) % limit;
-    let pokemon = pokedexList[page][index];
-    let cardPokemon = document.getElementById(pokemonId);
-    let cardChildren = cardPokemon.children[0];
-
-    if (pokemon.liked == null || pokemon.liked == undefined) {
-        pokedexList[page][index].liked = true;
-        botao.classList.add("liked");
-        cardChildren.classList.toggle("favoritedPokemon");
-        showPopUp();
-    } else if (pokemon.liked == false) {
-        pokedexList[page][index].liked = true;
-        botao.classList.add("liked");
-        cardChildren.classList.toggle("favoritedPokemon");
-        showPopUp();
-    } else {
-        pokedexList[page][index].liked = false;
-        botao.classList.remove("liked");
-        cardChildren.classList.toggle("favoritedPokemon");
-        closePopUp();
     }
 }
 
