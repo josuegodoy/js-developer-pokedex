@@ -1,7 +1,6 @@
 const pokemonList = document.getElementById('pokemonList');
 const loadMoreButton = document.getElementById('loadMoreButton');
-var pokedexList = [];
-let likedParam = '';
+var monsterList = [];
 let popup = document.querySelector('#popup');
 let modal = document.querySelector('.modal');
 let infoDetails = document.querySelector('.infoModal');
@@ -10,35 +9,19 @@ const maxRecords = 9999;
 const limit = 20;
 let offset = 0;
 
-//Carrega os pokemons na tela
+//Load Pokemon cards
 loadPokemonItens(offset, limit)
 
-//Requisita mais pokemons a API baseado no limite
+//Request more data from API
 function loadPokemonItens(offset, limit) {
     pokeApi.getPokemons(offset, limit).then((pokemons = []) => {
-        pokedexList.push(pokemons)
+        monsterList.push(pokemons)
         const newHtml = pokemons.map(convertPokemonToLi).join('')
         pokemonList.innerHTML += newHtml
     })
 }
 
-//Infinite Scroll - Carrega mais pokémons ao final da página
-window.addEventListener('scroll', () => {
-    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight) {
-        offset += limit
-        const qtdRecordsWithNexPage = offset + limit
-
-        if (qtdRecordsWithNexPage >= maxRecords) {
-            const newLimit = maxRecords - offset
-
-            loadPokemonItens(offset, newLimit)
-        } else {
-            loadPokemonItens(offset, limit)
-        }
-    }
-})
-
-//Carrega mais pokemons ao clicar no botão de Carregar (caso o infinite scroll falhe)
+//Load More Button
 loadMoreButton.addEventListener('click', () => {
     offset += limit
     const qtdRecordsWithNexPage = offset + limit
@@ -53,7 +36,7 @@ loadMoreButton.addEventListener('click', () => {
     }
 })
 
-//Converte os pokemons em uma lista
+//Transform JSON data to HTML List
 function convertPokemonToLi(pokemon) {
     return `
     <button id="${pokemon.number}" class='pokemon-card' onclick='openModal(${pokemon.number})'>
@@ -74,26 +57,25 @@ function convertPokemonToLi(pokemon) {
     `
 }
 
-//Pega o pokemon pela Id
-function catchPokemon(pokemonId) {
+//Get Pokemon by ID
+function getPokemon(pokemonId) {
     let page = parseInt((pokemonId - 1) / limit);
     let index = (pokemonId - 1) % limit;
-    let pokemon = pokedexList[page][index];
+    let pokemon = monsterList[page][index];
 
     return pokemon
 }
 
-//Abre janela Modal
+//Open Modal
 function openModal(pokemonId) {
     let page = parseInt((pokemonId - 1) / limit);
     let index = (pokemonId - 1) % limit;
-    let pokemon = catchPokemon(pokemonId);
+    let pokemon = getPokemon(pokemonId);
     const newModal = buildModal(pokemon);
     modal.style.display = 'block';
     modal.classList.add(`${pokemon.type}`);
     modal.innerHTML += newModal;
 
-    //Monta informações iniciais menu
     let menuInfo = document.querySelector('.infoModal');
     let elements = document.querySelectorAll('.menuModal button');
     let id;
@@ -106,41 +88,22 @@ function openModal(pokemonId) {
     let msg = details(id, pokemonId);
     menuInfo.innerHTML = msg;
 
-    //Chama função de formatar dados
+    //DataTranformation
     formatData();
 
-    //Esconde a barra de rolagem do corpo da página
-    let content = document.querySelector('body');
-    content.style.overflowY = 'hidden';
 }
 
-//Função fechar botão mensagem de alerta do favorito
-function showPopUp() {
-    popup.style.display = "flex";
 
-    setTimeout(closePopUp, 4000)
-}
-
-function closePopUp() {
-    popup.style.display = "none";
-}
-
-//Fecha janela Modal
+//Close Modal
 function closeModal(pokemonId) {
-    let pokemon = catchPokemon(pokemonId);
+    let pokemon = getPokemon(pokemonId);
 
     modal.classList.remove(`${pokemon.type}`);
     modal.style.display = "none";
     modal.innerHTML = "";
-
-    closePopUp();
-
-    //Volta a barra de rolagem do corpo da página
-    let content = document.querySelector('body');
-    content.style.overflowY = 'scroll';
 }
 
-//Constrói a janela modal
+//Building Modal
 function buildModal(pokemon) {
     return `
     <div class="header">
@@ -182,19 +145,17 @@ function buildModal(pokemon) {
                 <li>Moves</li>
             </button>
         </ul>
-
         <hr>
-
         <div class="infoModal">
         </div>
     </div>
     `
 }
 
-//Formata Movimentos
+//Monster moves treatment
 function formatMoves(pokemonId) {
     let moves = document.querySelector('.moves table tbody');
-    let pokemon = catchPokemon(pokemonId);
+    let pokemon = getPokemon(pokemonId);
     let movesUpperText = pokemon.moves;
 
     let upper = movesUpperText.map((e) => {
@@ -211,9 +172,9 @@ function formatMoves(pokemonId) {
     }
 }
 
-//Formata Evoluções
+// Monster Evolution Chains treatment
 function formatEvolutions(pokemonId) {
-    let pokemon = catchPokemon(pokemonId);
+    let pokemon = getPokemon(pokemonId);
 
     let upperName = pokemon.evolutions.map((e) => {
         return ' ' + e.charAt(0).toUpperCase() + e.substring(1);
@@ -226,9 +187,9 @@ function formatEvolutions(pokemonId) {
     return imgPokemons.join('');
 }
 
-//Formata demais características
+//Another details treatment
 function formatData() {
-    //Formata habilidades
+    //abilities
     let abilitiesUpper = document.querySelector('.abilities');
     let abilitiesUpperText = document.querySelector('.abilities').textContent;
     let splitString = abilitiesUpperText.split(',');
@@ -239,14 +200,14 @@ function formatData() {
 
     abilitiesUpper.innerHTML = upper.join(', ');
 
-    //Formata Peso
+    //Weight
     let weight = document.querySelector('.weight');
     let weightText = document.querySelector('.weight').textContent;
     let newWeight = weightText.substring(0, weightText.length - 1) + "." + weightText.substring(weightText.length - 1);
 
     weight.innerHTML = newWeight + ' kg';
 
-    //Formata Altura
+    //Heght
     let height = document.querySelector('.height');
     let heightNumber = parseInt(document.querySelector('.height').textContent);
     let newHeight = (heightNumber * 10) / 100;
@@ -258,7 +219,7 @@ function formatData() {
     }
 }
 
-//Seleção do menu
+//Navigation menu
 function menuSelector(id, pokemonId) {
     let menuId = document.getElementById(id);
     let elements = document.querySelectorAll('.menuModal button');
@@ -276,22 +237,21 @@ function menuSelector(id, pokemonId) {
     msg = details(id, pokemonId);
     menuInfo.innerHTML = msg;
 
-    //Dependendo do menu, chama a função espeficica referente aos dados
     if (menuId.id == 'menu1') formatData();
     if (menuId.id == 'menu2') barColors(pokemonId);
     if (menuId.id == 'menu3') formatEvolutions(pokemonId);
     if (menuId.id == 'menu4') formatMoves(pokemonId);
 }
 
-//Ajuste das barras de atributos
+//Attributes status bar
 function barColors(pokemonId) {
     let colorBar = document.querySelectorAll('.health-bar div');
-    let pokemon = catchPokemon(pokemonId);
+    let pokemon = getPokemon(pokemonId);
     let stats = pokemon.stats;
     let maxWidthBar = 200, maxAttribute = 225, newWidthBar = 0;
 
     for (let i = 0; i < colorBar.length; i++) {
-        //Ajusta cor das barras
+        //Status bar colors
         if (stats[i] > 75) {
             colorBar[i].classList.add("bar-green");
             colorBar[i].classList.remove("bar-red");
@@ -300,15 +260,15 @@ function barColors(pokemonId) {
             colorBar[i].classList.remove("bar-green");
         }
 
-        //Ajustar largura das barras
+        //Width Adjustment
         newWidthBar = (stats[i] * maxWidthBar) / maxAttribute;
         colorBar[i].style.width = newWidthBar + 'px';
     }
 }
 
-//Menu de detalhes
+//Details Menu
 function details(param, pokemonId) {
-    let pokemon = catchPokemon(pokemonId);
+    let pokemon = getPokemon(pokemonId);
 
     if (param == 'menu1') {
         return `

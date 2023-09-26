@@ -1,7 +1,7 @@
 
 const pokeApi = {}
 
-//Pega os pokemons pela API
+//Get Monster List
 pokeApi.getPokemons = (offset = 0, limit = 5) => {
     const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`
 
@@ -13,7 +13,7 @@ pokeApi.getPokemons = (offset = 0, limit = 5) => {
         .then((pokemonsDetails) => pokemonsDetails)
 }
 
-//Faz a chamada para cada pokemon da lista
+//Get more details
 pokeApi.getPokemonDetail = (pokemon) => {
     return fetch(pokemon.url)
         .then((response) => response.json())
@@ -22,7 +22,7 @@ pokeApi.getPokemonDetail = (pokemon) => {
         .then(getEvolutions)
 }
 
-//Converte os detalhes da API em um pokemon
+//Convert API data to Pokemon object
 function convertPokeApiDetailToPokemon(pokeDetail) {
     const pokemon = new Pokemon()
     pokemon.photo = pokeDetail.sprites.other.dream_world.front_default
@@ -59,7 +59,7 @@ function convertPokeApiDetailToPokemon(pokeDetail) {
     return pokemon
 }
 
-//Pega mais informações sobre os pokemons relativo às espécies
+//Get more information about monster species
 function getInfoSpecies(pokemon) {
     const url = `https://pokeapi.co/api/v2/pokemon-species/${pokemon.number}`;
     
@@ -96,7 +96,7 @@ function getInfoSpecies(pokemon) {
         })
 }
 
-//Pega as evoluções do pokemon
+//Get evolution chain from API
 function getEvolutions(pokemon) {
     const url = `https://pokeapi.co/api/v2/evolution-chain/${pokemon.evolutionChain}`;
     
@@ -104,7 +104,7 @@ function getEvolutions(pokemon) {
         .then(response => response.json())
         .then((data) => {
 
-            //Trata evoluções do Eevee e outros pokemons que possuem muitas
+            //Pokemons with multiple evolution chains
             if (pokemon.evolutionChain != 67 &&
                 pokemon.evolutionChain != 47 &&
                 pokemon.evolutionChain != 213){
@@ -114,17 +114,17 @@ function getEvolutions(pokemon) {
                                             data.chain.evolves_to[0].species.name,
                                             data.chain.evolves_to[0].evolves_to[0].species.name]
 
-                        //Pega as urls dos pokemons da cadeia de evolução
+                        //Get evolution chains URL
                         let evolution1 = data.chain.species.url;
                         let evolution2 = data.chain.evolves_to[0].species.url;
                         let evolution3 = data.chain.evolves_to[0].evolves_to[0].species.url;
 
-                        //Divide as urls pega '/' para pegar o id do pokemon
+                        //Split urls with slash to get id
                         let evolId1 = evolution1.split('/');
                         let evolId2 = evolution2.split('/');
                         let evolId3 = evolution3.split('/');
 
-                        //Substitui o id no endereço das imagens dos pokemons e armazena
+                        //Replace id on picture url template
                         let urlSprite = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/'
                         
                         pokemon.evolutionsSprites = [`${urlSprite}${evolId1[6]}.svg`,
@@ -134,15 +134,15 @@ function getEvolutions(pokemon) {
                         pokemon.evolutions = [data.chain.species.name,
                                             data.chain.evolves_to[0].species.name]  
                 
-                        //Pega as urls dos pokemons da cadeia de evolução
+                        //Get evolution chains URL
                         let evolution1 = data.chain.species.url;
                         let evolution2 = data.chain.evolves_to[0].species.url;
 
-                        //Divide as urls pega '/' para pegar o id do pokemon
+                        //Split urls with slash to get id
                         let evolId1 = evolution1.split('/');
                         let evolId2 = evolution2.split('/');
 
-                        //Substitui o id no endereço das imagens dos pokemons e armazena
+                        //Replace id on picture url template
                         let urlSprite = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/'
                         
                         pokemon.evolutionsSprites = [`${urlSprite}${evolId1[6]}.svg`,
@@ -155,11 +155,11 @@ function getEvolutions(pokemon) {
                 data.chain.evolves_to.map((evolv) => {
                     pokemon.evolutions += evolv.species.name.charAt(0).toUpperCase() + evolv.species.name.substring(1) + ', ';
 
-                    //Pega as urls dos pokemons e divide a string pra pegar o id
+                    //Split urls with slash to get id
                     let evolutions = evolv.species.url;
                     let evolId = evolutions.split('/');
 
-                    //Substitui o id no endereço das imagens dos pokemons e armazena
+                    // Replace id on picture url template
                     let urlSprite = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/'
                     
                     pokemon.evolutionsSprites += [`${urlSprite}${evolId[6]}.svg`]
